@@ -1,0 +1,21 @@
+{
+  "name": "ctrlraw",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "./programs/*"
+  ],
+  "scripts": {
+    "demo": "yarn workspace demo",
+    "demo:test": "yarn ts-node ./tests/demo.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.0",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.4"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.31.0"
+  }
+}
