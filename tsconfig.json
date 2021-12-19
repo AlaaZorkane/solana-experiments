@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "experimentalDecorators": true,
     "allowJs": true,
     "downlevelIteration": true,
     "esModuleInterop": true,
@@ -15,5 +16,5 @@
     "strict": false,
     "target": "es5"
   },
-  "include": ["tests/**/*"]
+  "include": ["tests/**/*", "generated/**/*"]
 }

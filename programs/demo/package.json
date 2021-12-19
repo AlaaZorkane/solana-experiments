@@ -5,6 +5,7 @@
   "scripts": {
     "build": "cargo build-bpf",
     "deploy": "solana program deploy ../../target/deploy/demo.so",
-    "logs": "solana logs $(cat program_id.md)"
+    "logs": "solana logs $(cat program_id.md)",
+    "proto": "pb-rs instructions.proto -d src"
   }
 }

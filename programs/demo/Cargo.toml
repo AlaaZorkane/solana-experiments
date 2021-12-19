@@ -10,6 +10,7 @@ test-bpf = []
 
 [dependencies]
 borsh = "0.9.1"
+quick-protobuf = "0.8.0"
 solana-program = "1.8.1"
 
 [dev-dependencies]

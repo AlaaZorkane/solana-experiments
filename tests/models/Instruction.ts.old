@@ -1,0 +1,6 @@
+import { deserialize, serialize } from "@solvei/borsh";
+import { generateSchemas, Schema } from "@solvei/borsh/schema";
+
+export class Instruction {
+  public schema?: Schema;
+}

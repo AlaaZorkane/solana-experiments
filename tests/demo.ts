@@ -8,6 +8,13 @@ import {
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
+import { deserialize, serialize } from "@solvei/borsh";
+import { generateSchemas } from "@solvei/borsh/schema";
+import {
+  AddInstruction,
+  DemoInstructionData,
+  EchoInstruction,
+} from "../generated/programs/demo/instructions";
 
 const programId = new PublicKey("zxYPiKJkBtpkyhqspFT2oCV3NXtY24oCrsw6sqwQL1G");
 
@@ -26,21 +33,30 @@ const main = async () => {
 
   console.log("Airdrop:", airdrop);
 
-  // const instruction = new TransactionInstruction({
-  //   keys: [{ pubkey: keypair.publicKey, isSigner: true, isWritable: true }],
-  //   programId,
-  //   data: Buffer.from("Hello, world!"),
-  // });
+  const demoInstruction = DemoInstructionData.encode({
+    add: undefined,
+    echo: { str: "Hello, world!" },
+  }).finish();
 
-  // const transaction = new Transaction();
+  const instruction = new TransactionInstruction({
+    keys: [{ pubkey: keypair.publicKey, isSigner: true, isWritable: true }],
+    programId,
+    data: Buffer.from(demoInstruction),
+  });
 
-  // transaction.add(instruction);
+  const transaction = new Transaction();
 
-  // const tx = await sendAndConfirmTransaction(connection, transaction, [
-  //   keypair,
-  // ]);
+  transaction.add(instruction);
 
-  // console.log("Transaction:", tx);
+  try {
+    const tx = await sendAndConfirmTransaction(connection, transaction, [
+      keypair,
+    ]);
+    console.log("Transaction:", tx);
+  } catch (err) {
+    console.log("Error");
+    console.error(err);
+  }
 };
 
 main()

@@ -1,0 +1,73 @@
+import {
+  clusterApiUrl,
+  Connection,
+  Keypair,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  sendAndConfirmTransaction,
+  Transaction,
+  TransactionInstruction,
+} from "@solana/web3.js";
+import { deserialize, serialize } from "@solvei/borsh";
+import { BinaryReader } from "@solvei/borsh/binary";
+import { generateSchemas } from "@solvei/borsh/schema";
+import { AddInstruction } from "./models/Add";
+import { EchoInstruction } from "./models/Echo";
+
+const programId = new PublicKey("zxYPiKJkBtpkyhqspFT2oCV3NXtY24oCrsw6sqwQL1G");
+
+const main = async () => {
+  // const keypair = Keypair.generate();
+  // const connection = new Connection(clusterApiUrl("devnet"));
+
+  // console.log("Public key:", keypair.publicKey.toBase58());
+
+  // const airdrop = await connection.requestAirdrop(
+  //   keypair.publicKey,
+  //   LAMPORTS_PER_SOL
+  // );
+
+  // await connection.confirmTransaction(airdrop);
+
+  // console.log("Airdrop:", airdrop);
+
+  // const echoInstruction = new EchoInstruction("Hello, world!").serialize();
+  const schema = generateSchemas([AddInstruction]);
+  const addInstruction = serialize(
+    schema,
+    new AddInstruction({ a: 10, b: 10 })
+  );
+
+  // console.log("Echo instruction:", echoInstruction);
+  console.log("Add instruction:", addInstruction);
+
+  // const deserializedEcho = EchoInstruction.deserialize(echoInstruction);
+  const deserializedAdd = deserialize(
+    schema,
+    AddInstruction,
+    Buffer.from(addInstruction)
+  );
+
+  // console.log("Deserialized echo instruction:", deserializedEcho);
+  console.log("Deserialized add instruction:", deserializedAdd);
+
+  // const instruction = new TransactionInstruction({
+  //   keys: [{ pubkey: keypair.publicKey, isSigner: true, isWritable: true }],
+  //   programId,
+  //   data: Buffer.from("Hello, world!"),
+  // });
+
+  // const transaction = new Transaction();
+
+  // transaction.add(instruction);
+
+  // const tx = await sendAndConfirmTransaction(connection, transaction, [
+  //   keypair,
+  // ]);
+
+  // console.log("Transaction:", tx);
+};
+
+main()
+  .then(() => process.exit(0))
+  .catch(console.error);

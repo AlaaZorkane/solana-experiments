@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+message DemoInstructionData {
+  oneof instruction_oneof {
+    EchoInstruction echo = 1;
+    AddInstruction add = 2;
+  }
+}
+
+message EchoInstruction {
+  string str = 1;
+}
+
+message AddInstruction {
+  int32 a = 1;
+  int32 b = 2;
+}

@@ -1,0 +1,40 @@
+import { field, generateSchemas, Schema } from "@solvei/borsh/schema";
+import { deserialize, serialize } from "@solvei/borsh";
+import { Instruction } from "./Instruction";
+
+export class AddInstruction {
+  public schema?: Schema;
+
+  @field({ type: "u64" })
+  public a: number;
+
+  @field({ type: "u64" })
+  public b: number;
+
+  constructor(args: { a: number; b: number }) {
+    this.a = args.a;
+    this.b = args.b;
+  }
+
+  public serialize() {
+    if (!this.schema) {
+      this.schema = generateSchemas([this]);
+    }
+
+    console.log(this.schema);
+    return Buffer.from(serialize(this.schema, this));
+  }
+
+  /**
+   *
+   * @param data
+   * @param schema if schema is not provided, it will be generated
+   * @returns
+   */
+  static deserialize(data: Buffer, schema?: Schema) {
+    if (!schema) {
+      schema = generateSchemas([this]);
+    }
+    return deserialize(schema, this, data);
+  }
+}
