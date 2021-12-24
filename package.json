@@ -12,7 +12,7 @@
     "demo:test": "yarn ts-node ./tests/demo.ts",
     "demo:proto": "yarn workspace demo proto",
     "= GLOBAL =================================": "",
-    "generate": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./generated --ts_proto_opt=esModuleInterop=true $(find programs -iname \"*.proto\")",
+    "generate": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./generated --ts_proto_opt=esModuleInterop=true,useOptionals=messages,oneof=unions $(find programs -iname \"*.proto\")",
     "generate:all": "yarn concurrently \"yarn generate\" \"yarn workspaces run proto\""
   },
   "devDependencies": {

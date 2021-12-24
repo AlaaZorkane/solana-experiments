@@ -1,4 +1,5 @@
 import {
+  AccountMeta,
   clusterApiUrl,
   Connection,
   Keypair,
@@ -16,16 +17,20 @@ import {
   EchoInstruction,
 } from "../generated/programs/demo/instructions";
 
-const programId = new PublicKey("zxYPiKJkBtpkyhqspFT2oCV3NXtY24oCrsw6sqwQL1G");
+const programId = new PublicKey("2G6M4rDxMTHavf3JwS3XVEuDLokJTeDNok43W29LVZZJ");
 
 const main = async () => {
-  const keypair = Keypair.generate();
+  // SETUP
   const connection = new Connection(clusterApiUrl("devnet"));
 
-  console.log("Public key:", keypair.publicKey.toBase58());
+  const keypairOne = Keypair.generate();
+  const keypairTwo = Keypair.generate();
+
+  console.log("Public key (1):", keypairOne.publicKey.toBase58());
+  console.log("Public key (2):", keypairTwo.publicKey.toBase58());
 
   const airdrop = await connection.requestAirdrop(
-    keypair.publicKey,
+    keypairOne.publicKey,
     LAMPORTS_PER_SOL
   );
 
@@ -33,24 +38,49 @@ const main = async () => {
 
   console.log("Airdrop:", airdrop);
 
+  // CONSTRUCTION
+
   const demoInstruction = DemoInstructionData.encode({
-    add: undefined,
-    echo: { str: "Hello, world!" },
+    kind: {
+      $case: "transfer",
+      transfer: {
+        from: keypairOne.publicKey.toBase58(),
+        to: keypairTwo.publicKey.toBase58(),
+      },
+    },
   }).finish();
 
+  /**
+   * account[0] = from
+   * account[1] = to
+   */
+  const keys: AccountMeta[] = [
+    {
+      pubkey: keypairOne.publicKey,
+      isSigner: true,
+      isWritable: true,
+    },
+    {
+      pubkey: keypairTwo.publicKey,
+      isSigner: false,
+      isWritable: false,
+    },
+  ];
+
   const instruction = new TransactionInstruction({
-    keys: [{ pubkey: keypair.publicKey, isSigner: true, isWritable: true }],
+    keys,
     programId,
     data: Buffer.from(demoInstruction),
   });
 
+  // EXECUTION
   const transaction = new Transaction();
 
   transaction.add(instruction);
 
   try {
     const tx = await sendAndConfirmTransaction(connection, transaction, [
-      keypair,
+      keypairOne,
     ]);
     console.log("Transaction:", tx);
   } catch (err) {

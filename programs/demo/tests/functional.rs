@@ -1,12 +1,11 @@
 #![cfg(feature = "test-bpf")]
 
+use std::borrow::Cow;
+
 use demo::instructions::*;
 use demo::*;
-use quick_protobuf::{deserialize_from_slice, writer, BytesReader, MessageRead, Writer};
-use solana_program::{
-    instruction::{AccountMeta, Instruction},
-    msg,
-};
+use quick_protobuf::{BytesReader, MessageRead, Writer};
+use solana_program::instruction::{AccountMeta, Instruction};
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, signer::Signer, transaction::Transaction};
 
@@ -28,10 +27,7 @@ async fn test_demo() {
     let mut data = Vec::new();
     let mut writer = Writer::new(&mut data);
     let message = DemoInstructionData {
-        instruction_oneof: mod_DemoInstructionData::OneOfinstruction_oneof::add(AddInstruction {
-            a: 1,
-            b: 2,
-        }),
+        kind: mod_DemoInstructionData::OneOfkind::add(AddInstruction { a: 1, b: 2 }),
     };
 
     writer
@@ -42,7 +38,7 @@ async fn test_demo() {
     data.remove(0);
 
     let mut reader = BytesReader::from_bytes(&data);
-    let ins = DemoInstructionData::from_reader(&mut reader, &data).unwrap();
+    DemoInstructionData::from_reader(&mut reader, &data).unwrap();
 
     let mut transaction = Transaction::new_with_payer(
         &[Instruction {
@@ -56,4 +52,30 @@ async fn test_demo() {
     transaction.sign(&[&payer], recent_blockhash);
 
     banks_client.process_transaction(transaction).await.unwrap();
+}
+
+#[tokio::test]
+async fn test_transfer() {
+    let (mut banks_client, payer, recent_blockhash) = program_test().start().await;
+
+    let keypairOne = Keypair::new();
+    let pubkeyOne = keypairOne.pubkey();
+    // let pubkeyOneStr = Cow::Borrowed(&pubkeyOne.to_string());
+
+    let keypairTwo = Keypair::new();
+    let pubkeyTwo = keypairTwo.pubkey();
+    // let pubkeyTwoStr = Cow::Borrowed(&pubkeyTwo.to_owned());
+
+    let mut data = Vec::new();
+    let mut writer = Writer::new(&mut data);
+    let message = DemoInstructionData {
+        kind: mod_DemoInstructionData::OneOfkind::transfer(TransferInstruction {
+            from: Cow::Borrowed("yo"),
+            to: Cow::Borrowed("hello"),
+        }),
+    };
+
+    writer
+        .write_message(&message)
+        .expect("Cannot write message!");
 }

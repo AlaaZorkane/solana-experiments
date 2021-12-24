@@ -1,9 +1,11 @@
 syntax = "proto3";
 
 message DemoInstructionData {
-  oneof instruction_oneof {
+  oneof kind {
     EchoInstruction echo = 1;
     AddInstruction add = 2;
+    TransferInstruction transfer = 3;
+    DonateInstruction donate = 4;
   }
 }
 
@@ -14,4 +16,13 @@ message EchoInstruction {
 message AddInstruction {
   int32 a = 1;
   int32 b = 2;
+}
+
+message TransferInstruction {
+  string from = 1;
+  string to = 2;
+}
+
+message DonateInstruction {
+  int64 amount = 1;
 }
