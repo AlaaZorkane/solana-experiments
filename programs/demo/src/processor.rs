@@ -3,7 +3,9 @@
 use quick_protobuf::BytesReader;
 use quick_protobuf::MessageRead;
 use solana_program::account_info::next_account_info;
+use solana_program::native_token::LAMPORTS_PER_SOL;
 use solana_program::program::invoke;
+use solana_program::program::invoke_signed;
 use solana_program::system_instruction;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, log::sol_log_compute_units, msg,
@@ -18,7 +20,7 @@ pub struct Processor {}
 
 impl Processor {
     pub fn process_instruction(
-        _program_id: &Pubkey,
+        program_id: &Pubkey,
         accounts: &[AccountInfo],
         instruction_data: &[u8],
     ) -> ProgramResult {
@@ -30,7 +32,7 @@ impl Processor {
         match ins.kind {
             OneOfkind::echo(ins) => Processor::echo(ins),
             OneOfkind::add(ins) => Processor::add(ins),
-            OneOfkind::transfer(ins) => Processor::transfer(ins, accounts),
+            OneOfkind::transfer(ins) => Processor::transfer(ins, accounts, program_id),
             OneOfkind::donate(ins) => Processor::donate(ins),
             OneOfkind::None => {
                 return Err(ProgramError::InvalidInstructionData);
@@ -52,14 +54,16 @@ impl Processor {
         msg!("Add: {} + {} = {}", a, b, a + b);
     }
 
-    fn transfer(_ins: TransferInstruction, accounts: &[AccountInfo]) {
+    fn transfer(_ins: TransferInstruction, accounts: &[AccountInfo], program_id: &Pubkey) {
         let accounts_iter = &mut accounts.iter();
         let from = next_account_info(accounts_iter).unwrap();
         let to = next_account_info(accounts_iter).unwrap();
 
-        let transfer_instruction = system_instruction::transfer(from.key, to.key, 42);
+        // let (from_pubkey, bump) = Pubkey::create_with_seed(&[b"transfer"], program_id);
+        let transfer_instruction =
+            system_instruction::transfer(from.key, to.key, LAMPORTS_PER_SOL / 2);
 
-        let res = invoke(&transfer_instruction, accounts);
+        let res = invoke_signed(&transfer_instruction, accounts, &[]);
 
         if res.is_ok() {
             msg!("Transfer: {:#?} -> {:#?}", from.key, to.key);

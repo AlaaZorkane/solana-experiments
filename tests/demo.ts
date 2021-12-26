@@ -6,6 +6,7 @@ import {
   LAMPORTS_PER_SOL,
   PublicKey,
   sendAndConfirmTransaction,
+  SystemProgram,
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
@@ -26,8 +27,15 @@ const main = async () => {
   const keypairOne = Keypair.generate();
   const keypairTwo = Keypair.generate();
 
+  const onePDA = await PublicKey.createWithSeed(
+    keypairOne.publicKey,
+    "transfer",
+    programId
+  );
+
   console.log("Public key (1):", keypairOne.publicKey.toBase58());
   console.log("Public key (2):", keypairTwo.publicKey.toBase58());
+  console.log("PDA (1):", onePDA.toBase58());
 
   const airdrop = await connection.requestAirdrop(
     keypairOne.publicKey,
@@ -62,6 +70,11 @@ const main = async () => {
     },
     {
       pubkey: keypairTwo.publicKey,
+      isSigner: false,
+      isWritable: true,
+    },
+    {
+      pubkey: SystemProgram.programId,
       isSigner: false,
       isWritable: false,
     },
