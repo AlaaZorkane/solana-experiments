@@ -3,7 +3,6 @@ import {
   Connection,
   Keypair,
   LAMPORTS_PER_SOL,
-  Logs,
   sendAndConfirmTransaction,
   SystemProgram,
   Transaction,
@@ -49,7 +48,7 @@ describe("demo instructions", async () => {
   }, 100_000);
 
   it.concurrent("tx with echo instruction", async () => {
-    const msg = "Hello from Mocha 🚀";
+    const msg = "Hello from Vitest 🚀";
     const echoInstruction = demoBuilder.echo(msg);
 
     const transaction = new Transaction();
@@ -115,25 +114,26 @@ describe("demo instructions", async () => {
       }
 
       const balances = await Promise.all(balancesPromises);
-      console.log(balances);
 
-      // giveback.forEach((keypair, index) => {
-      //   transaction.add(
-      //     SystemProgram.transfer({
-      //       fromPubkey: keypair.publicKey,
-      //       lamports: balances[index] - MAYBE_FEE,
-      //       toPubkey: AIRDROP_KEY,
-      //     })
-      //   );
-      // });
+      console.log(`Giving back ${_.sum(balances)} lamports 🙏...`);
 
-      // const tx = await sendAndConfirmTransaction(
-      //   connection,
-      //   transaction,
-      //   giveback
-      // );
+      giveback.forEach((keypair, index) => {
+        transaction.add(
+          SystemProgram.transfer({
+            fromPubkey: keypair.publicKey,
+            lamports: balances[index] - MAYBE_FEE,
+            toPubkey: AIRDROP_KEY,
+          })
+        );
+      });
 
-      // console.log("Gave back all lamports to the system 🚀:", tx);
+      const tx = await sendAndConfirmTransaction(
+        connection,
+        transaction,
+        giveback
+      );
+
+      console.log("Gave back all lamports to the system 🚀:", tx);
     } catch (err) {
       console.error(err);
       console.log("Could not give back lamports to the system :(");

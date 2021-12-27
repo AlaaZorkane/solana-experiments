@@ -10,4 +10,4 @@ export const AIRDROP_KEY = new PublicKey(
 );
 
 // Can also be deterministcally calculated but eh 3gzt
-export const MAYBE_FEE = 8_000;
+export const MAYBE_FEE = 15_000;
