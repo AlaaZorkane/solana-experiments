@@ -3,6 +3,7 @@ import {
   Connection,
   Keypair,
   LAMPORTS_PER_SOL,
+  Logs,
   sendAndConfirmTransaction,
   SystemProgram,
   Transaction,
@@ -10,8 +11,10 @@ import {
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AIRDROP_KEY, DEMO_PROGRAM_ID, MAYBE_FEE } from "../utils";
 import { DemoInstructionBuilder } from "../../lib/demo";
+import fs from "fs/promises";
+import _ from "lodash";
 
-describe("demo instructions", () => {
+describe("demo instructions", async () => {
   const connection = new Connection(clusterApiUrl("devnet"));
   const wallet = new Keypair();
   const programId = DEMO_PROGRAM_ID;
@@ -22,51 +25,60 @@ describe("demo instructions", () => {
 
   const demoBuilder = new DemoInstructionBuilder(connection, wallet, programId);
 
+  console.log("Wallet PK:", wallet.publicKey.toBase58());
+  console.log("Program ID:", programId.toBase58());
+
   // Airdrop
   beforeAll(async () => {
-    const airdrop = await connection.requestAirdrop(
-      wallet.publicKey,
-      LAMPORTS_PER_SOL * 2
-    );
+    try {
+      console.log("Getting you some free SOL 😎...");
 
-    const confirmedTX = await connection.confirmTransaction(airdrop);
+      const airdrop = await connection.requestAirdrop(
+        wallet.publicKey,
+        LAMPORTS_PER_SOL
+      );
 
-    console.log("Airdrop confirmed 🚀:", confirmedTX);
-  });
+      const confirmedTX = await connection.confirmTransaction(airdrop);
 
-  it("tx with echo instruction", async () => {
-    const echoInstruction = demoBuilder.echo("Hello from Vitest 🚀");
+      expect(confirmedTX?.value?.err).toBeNull();
+
+      console.log("Airdrop confirmed 🚀:", airdrop);
+    } catch (err) {
+      console.error("Airdrop failed 💥:", err);
+    }
+  }, 100_000);
+
+  it.concurrent("tx with echo instruction", async () => {
+    const msg = "Hello from Mocha 🚀";
+    const echoInstruction = demoBuilder.echo(msg);
 
     const transaction = new Transaction();
-
     transaction.add(echoInstruction);
 
     const tx = await sendAndConfirmTransaction(connection, transaction, [
       wallet,
     ]);
-
-    console.log("TX:", tx);
-
     expect(tx).toBeDefined();
+
+    console.log("[ECHO] TX:", tx);
   });
 
-  it("tx with add instruction", async () => {
+  it.concurrent("tx with add instruction", async () => {
     const addInstruction = demoBuilder.add(13, 37);
 
     const transaction = new Transaction();
-
     transaction.add(addInstruction);
 
     const tx = await sendAndConfirmTransaction(connection, transaction, [
       wallet,
     ]);
 
-    console.log("TX:", tx);
-
     expect(tx).toBeDefined();
+
+    console.log("[ADD] TX:", tx);
   });
 
-  it("tx with transfer instruction", async () => {
+  it.concurrent("tx with transfer instruction", async () => {
     const to = new Keypair();
     giveback.push(to);
 
@@ -83,41 +95,52 @@ describe("demo instructions", () => {
       wallet,
     ]);
 
-    console.log("TX:", tx);
-
     expect(tx).toBeDefined();
+
+    console.log("[TRANSFER] TX:", tx);
   });
 
-  // TODO: donate test
+  it.todo("tx with donate instruction");
 
   // Give back all lamports to the system
   afterAll(async () => {
-    const transaction = new Transaction();
+    try {
+      console.log("Attempting to give back lamports to the system...");
+      const transaction = new Transaction();
 
-    const balancesPromises = [];
-    for (let index = 0; index < giveback.length; index++) {
-      const keypair = giveback[index];
-      balancesPromises.push(connection.getBalance(keypair.publicKey));
-    }
+      const balancesPromises = [];
+      for (let index = 0; index < giveback.length; index++) {
+        const keypair = giveback[index];
+        balancesPromises.push(connection.getBalance(keypair.publicKey));
+      }
 
-    const balances = await Promise.all(balancesPromises);
+      const balances = await Promise.all(balancesPromises);
+      console.log(balances);
 
-    giveback.forEach((keypair, index) => {
-      transaction.add(
-        SystemProgram.transfer({
-          fromPubkey: keypair.publicKey,
-          lamports: balances[index] - MAYBE_FEE,
-          toPubkey: AIRDROP_KEY,
-        })
+      // giveback.forEach((keypair, index) => {
+      //   transaction.add(
+      //     SystemProgram.transfer({
+      //       fromPubkey: keypair.publicKey,
+      //       lamports: balances[index] - MAYBE_FEE,
+      //       toPubkey: AIRDROP_KEY,
+      //     })
+      //   );
+      // });
+
+      // const tx = await sendAndConfirmTransaction(
+      //   connection,
+      //   transaction,
+      //   giveback
+      // );
+
+      // console.log("Gave back all lamports to the system 🚀:", tx);
+    } catch (err) {
+      console.error(err);
+      console.log("Could not give back lamports to the system :(");
+      console.log(
+        "Please manually give back lamports to the system, saved keys data to ./giveback.json"
       );
-    });
-
-    const tx = await sendAndConfirmTransaction(
-      connection,
-      transaction,
-      giveback
-    );
-
-    console.log("Gave back all lamports to the system 🚀:", tx);
-  });
+      fs.writeFile("giveback.json", JSON.stringify(giveback, null, 2));
+    }
+  }, 100_000);
 });
