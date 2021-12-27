@@ -65,7 +65,7 @@ use super::*;
 pub enum OneOfkind<'a> {
     echo(EchoInstruction<'a>),
     add(AddInstruction),
-    transfer(TransferInstruction<'a>),
+    transfer(TransferInstruction),
     donate(DonateInstruction),
     None,
 }
@@ -145,18 +145,16 @@ impl MessageWrite for AddInstruction {
 }
 
 #[derive(Debug, Default, PartialEq, Clone)]
-pub struct TransferInstruction<'a> {
-    pub from: Cow<'a, str>,
-    pub to: Cow<'a, str>,
+pub struct TransferInstruction {
+    pub amount: u64,
 }
 
-impl<'a> MessageRead<'a> for TransferInstruction<'a> {
+impl<'a> MessageRead<'a> for TransferInstruction {
     fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
         let mut msg = Self::default();
         while !r.is_eof() {
             match r.next_tag(bytes) {
-                Ok(10) => msg.from = r.read_string(bytes).map(Cow::Borrowed)?,
-                Ok(18) => msg.to = r.read_string(bytes).map(Cow::Borrowed)?,
+                Ok(8) => msg.amount = r.read_uint64(bytes)?,
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -165,16 +163,14 @@ impl<'a> MessageRead<'a> for TransferInstruction<'a> {
     }
 }
 
-impl<'a> MessageWrite for TransferInstruction<'a> {
+impl MessageWrite for TransferInstruction {
     fn get_size(&self) -> usize {
         0
-        + if self.from == "" { 0 } else { 1 + sizeof_len((&self.from).len()) }
-        + if self.to == "" { 0 } else { 1 + sizeof_len((&self.to).len()) }
+        + if self.amount == 0u64 { 0 } else { 1 + sizeof_varint(*(&self.amount) as u64) }
     }
 
     fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.from != "" { w.write_with_tag(10, |w| w.write_string(&**&self.from))?; }
-        if self.to != "" { w.write_with_tag(18, |w| w.write_string(&**&self.to))?; }
+        if self.amount != 0u64 { w.write_with_tag(8, |w| w.write_uint64(*&self.amount))?; }
         Ok(())
     }
 }

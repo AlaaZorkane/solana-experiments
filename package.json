@@ -20,11 +20,13 @@
     "concurrently": "^6.5.1",
     "ts-node": "^10.4.0",
     "ts-proto": "^1.95.0",
-    "typescript": "^4.5.4"
+    "typescript": "^4.5.4",
+    "vitest": "^0.0.116"
   },
   "dependencies": {
     "@solana/web3.js": "^1.31.0",
     "@solvei/borsh": "^0.0.20",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "vite": "^2.7.7"
   }
 }

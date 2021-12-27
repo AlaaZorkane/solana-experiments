@@ -20,7 +20,7 @@ pub struct Processor {}
 
 impl Processor {
     pub fn process_instruction(
-        program_id: &Pubkey,
+        _program_id: &Pubkey,
         accounts: &[AccountInfo],
         instruction_data: &[u8],
     ) -> ProgramResult {
@@ -32,7 +32,7 @@ impl Processor {
         match ins.kind {
             OneOfkind::echo(ins) => Processor::echo(ins),
             OneOfkind::add(ins) => Processor::add(ins),
-            OneOfkind::transfer(ins) => Processor::transfer(ins, accounts, program_id),
+            OneOfkind::transfer(ins) => Processor::transfer(ins, accounts),
             OneOfkind::donate(ins) => Processor::donate(ins),
             OneOfkind::None => {
                 return Err(ProgramError::InvalidInstructionData);
@@ -54,14 +54,12 @@ impl Processor {
         msg!("Add: {} + {} = {}", a, b, a + b);
     }
 
-    fn transfer(_ins: TransferInstruction, accounts: &[AccountInfo], program_id: &Pubkey) {
+    fn transfer(ins: TransferInstruction, accounts: &[AccountInfo]) {
         let accounts_iter = &mut accounts.iter();
         let from = next_account_info(accounts_iter).unwrap();
         let to = next_account_info(accounts_iter).unwrap();
 
-        // let (from_pubkey, bump) = Pubkey::create_with_seed(&[b"transfer"], program_id);
-        let transfer_instruction =
-            system_instruction::transfer(from.key, to.key, LAMPORTS_PER_SOL / 2);
+        let transfer_instruction = system_instruction::transfer(from.key, to.key, ins.amount);
 
         let res = invoke_signed(&transfer_instruction, accounts, &[]);
 

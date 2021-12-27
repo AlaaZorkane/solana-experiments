@@ -19,10 +19,9 @@ message AddInstruction {
 }
 
 message TransferInstruction {
-  string from = 1;
-  string to = 2;
+  uint64 amount = 1;
 }
 
 message DonateInstruction {
-  int64 amount = 1;
+  uint64 amount = 1;
 }

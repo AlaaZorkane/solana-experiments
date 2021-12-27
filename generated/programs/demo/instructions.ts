@@ -22,8 +22,7 @@ export interface AddInstruction {
 }
 
 export interface TransferInstruction {
-  from: string;
-  to: string;
+  amount: number;
 }
 
 export interface DonateInstruction {
@@ -314,18 +313,15 @@ export const AddInstruction = {
   },
 };
 
-const baseTransferInstruction: object = { from: "", to: "" };
+const baseTransferInstruction: object = { amount: 0 };
 
 export const TransferInstruction = {
   encode(
     message: TransferInstruction,
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
-    if (message.from !== "") {
-      writer.uint32(10).string(message.from);
-    }
-    if (message.to !== "") {
-      writer.uint32(18).string(message.to);
+    if (message.amount !== 0) {
+      writer.uint32(8).uint64(message.amount);
     }
     return writer;
   },
@@ -338,10 +334,7 @@ export const TransferInstruction = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.from = reader.string();
-          break;
-        case 2:
-          message.to = reader.string();
+          message.amount = longToNumber(reader.uint64() as Long);
           break;
         default:
           reader.skipType(tag & 7);
@@ -353,19 +346,16 @@ export const TransferInstruction = {
 
   fromJSON(object: any): TransferInstruction {
     const message = { ...baseTransferInstruction } as TransferInstruction;
-    message.from =
-      object.from !== undefined && object.from !== null
-        ? String(object.from)
-        : "";
-    message.to =
-      object.to !== undefined && object.to !== null ? String(object.to) : "";
+    message.amount =
+      object.amount !== undefined && object.amount !== null
+        ? Number(object.amount)
+        : 0;
     return message;
   },
 
   toJSON(message: TransferInstruction): unknown {
     const obj: any = {};
-    message.from !== undefined && (obj.from = message.from);
-    message.to !== undefined && (obj.to = message.to);
+    message.amount !== undefined && (obj.amount = Math.round(message.amount));
     return obj;
   },
 
@@ -373,8 +363,7 @@ export const TransferInstruction = {
     object: I
   ): TransferInstruction {
     const message = { ...baseTransferInstruction } as TransferInstruction;
-    message.from = object.from ?? "";
-    message.to = object.to ?? "";
+    message.amount = object.amount ?? 0;
     return message;
   },
 };

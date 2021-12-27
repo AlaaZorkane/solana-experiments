@@ -54,28 +54,28 @@ async fn test_demo() {
     banks_client.process_transaction(transaction).await.unwrap();
 }
 
-#[tokio::test]
-async fn test_transfer() {
-    let (mut banks_client, payer, recent_blockhash) = program_test().start().await;
+// #[tokio::test]
+// async fn test_transfer() {
+//     let (mut banks_client, payer, recent_blockhash) = program_test().start().await;
 
-    let keypairOne = Keypair::new();
-    let pubkeyOne = keypairOne.pubkey();
-    // let pubkeyOneStr = Cow::Borrowed(&pubkeyOne.to_string());
+//     let keypairOne = Keypair::new();
+//     let pubkeyOne = keypairOne.pubkey();
+//     // let pubkeyOneStr = Cow::Borrowed(&pubkeyOne.to_string());
 
-    let keypairTwo = Keypair::new();
-    let pubkeyTwo = keypairTwo.pubkey();
-    // let pubkeyTwoStr = Cow::Borrowed(&pubkeyTwo.to_owned());
+//     let keypairTwo = Keypair::new();
+//     let pubkeyTwo = keypairTwo.pubkey();
+//     // let pubkeyTwoStr = Cow::Borrowed(&pubkeyTwo.to_owned());
 
-    let mut data = Vec::new();
-    let mut writer = Writer::new(&mut data);
-    let message = DemoInstructionData {
-        kind: mod_DemoInstructionData::OneOfkind::transfer(TransferInstruction {
-            from: Cow::Borrowed("yo"),
-            to: Cow::Borrowed("hello"),
-        }),
-    };
+//     let mut data = Vec::new();
+//     let mut writer = Writer::new(&mut data);
+//     let message = DemoInstructionData {
+//         kind: mod_DemoInstructionData::OneOfkind::transfer(TransferInstruction {
+//             from: Cow::Borrowed("yo"),
+//             to: Cow::Borrowed("hello"),
+//         }),
+//     };
 
-    writer
-        .write_message(&message)
-        .expect("Cannot write message!");
-}
+//     writer
+//         .write_message(&message)
+//         .expect("Cannot write message!");
+// }
