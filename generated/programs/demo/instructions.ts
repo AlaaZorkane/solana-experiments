@@ -27,6 +27,7 @@ export interface TransferInstruction {
 
 export interface DonateInstruction {
   amount: number;
+  jarBumpSeed: number;
 }
 
 const baseDemoInstructionData: object = {};
@@ -368,7 +369,7 @@ export const TransferInstruction = {
   },
 };
 
-const baseDonateInstruction: object = { amount: 0 };
+const baseDonateInstruction: object = { amount: 0, jarBumpSeed: 0 };
 
 export const DonateInstruction = {
   encode(
@@ -376,7 +377,10 @@ export const DonateInstruction = {
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
     if (message.amount !== 0) {
-      writer.uint32(8).int64(message.amount);
+      writer.uint32(8).uint64(message.amount);
+    }
+    if (message.jarBumpSeed !== 0) {
+      writer.uint32(16).uint64(message.jarBumpSeed);
     }
     return writer;
   },
@@ -389,7 +393,10 @@ export const DonateInstruction = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.amount = longToNumber(reader.int64() as Long);
+          message.amount = longToNumber(reader.uint64() as Long);
+          break;
+        case 2:
+          message.jarBumpSeed = longToNumber(reader.uint64() as Long);
           break;
         default:
           reader.skipType(tag & 7);
@@ -405,12 +412,18 @@ export const DonateInstruction = {
       object.amount !== undefined && object.amount !== null
         ? Number(object.amount)
         : 0;
+    message.jarBumpSeed =
+      object.jarBumpSeed !== undefined && object.jarBumpSeed !== null
+        ? Number(object.jarBumpSeed)
+        : 0;
     return message;
   },
 
   toJSON(message: DonateInstruction): unknown {
     const obj: any = {};
     message.amount !== undefined && (obj.amount = Math.round(message.amount));
+    message.jarBumpSeed !== undefined &&
+      (obj.jarBumpSeed = Math.round(message.jarBumpSeed));
     return obj;
   },
 
@@ -419,6 +432,7 @@ export const DonateInstruction = {
   ): DonateInstruction {
     const message = { ...baseDonateInstruction } as DonateInstruction;
     message.amount = object.amount ?? 0;
+    message.jarBumpSeed = object.jarBumpSeed ?? 0;
     return message;
   },
 };

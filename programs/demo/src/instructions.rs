@@ -177,7 +177,8 @@ impl MessageWrite for TransferInstruction {
 
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct DonateInstruction {
-    pub amount: i64,
+    pub amount: u64,
+    pub jar_bump_seed: u64,
 }
 
 impl<'a> MessageRead<'a> for DonateInstruction {
@@ -185,7 +186,8 @@ impl<'a> MessageRead<'a> for DonateInstruction {
         let mut msg = Self::default();
         while !r.is_eof() {
             match r.next_tag(bytes) {
-                Ok(8) => msg.amount = r.read_int64(bytes)?,
+                Ok(8) => msg.amount = r.read_uint64(bytes)?,
+                Ok(16) => msg.jar_bump_seed = r.read_uint64(bytes)?,
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -197,11 +199,13 @@ impl<'a> MessageRead<'a> for DonateInstruction {
 impl MessageWrite for DonateInstruction {
     fn get_size(&self) -> usize {
         0
-        + if self.amount == 0i64 { 0 } else { 1 + sizeof_varint(*(&self.amount) as u64) }
+        + if self.amount == 0u64 { 0 } else { 1 + sizeof_varint(*(&self.amount) as u64) }
+        + if self.jar_bump_seed == 0u64 { 0 } else { 1 + sizeof_varint(*(&self.jar_bump_seed) as u64) }
     }
 
     fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.amount != 0i64 { w.write_with_tag(8, |w| w.write_int64(*&self.amount))?; }
+        if self.amount != 0u64 { w.write_with_tag(8, |w| w.write_uint64(*&self.amount))?; }
+        if self.jar_bump_seed != 0u64 { w.write_with_tag(16, |w| w.write_uint64(*&self.jar_bump_seed))?; }
         Ok(())
     }
 }

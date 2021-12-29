@@ -20,7 +20,7 @@ pub struct Processor {}
 
 impl Processor {
     pub fn process_instruction(
-        _program_id: &Pubkey,
+        program_id: &Pubkey,
         accounts: &[AccountInfo],
         instruction_data: &[u8],
     ) -> ProgramResult {
@@ -33,7 +33,7 @@ impl Processor {
             OneOfkind::echo(ins) => Processor::echo(ins),
             OneOfkind::add(ins) => Processor::add(ins),
             OneOfkind::transfer(ins) => Processor::transfer(ins, accounts),
-            OneOfkind::donate(ins) => Processor::donate(ins),
+            OneOfkind::donate(ins) => Processor::donate(ins, accounts, program_id),
             OneOfkind::None => {
                 return Err(ProgramError::InvalidInstructionData);
             }
@@ -71,7 +71,30 @@ impl Processor {
         }
     }
 
-    fn donate(ins: DonateInstruction) {
-        msg!("Donate: {}", ins.amount);
+    /**
+     * Creates a donation account for each donation
+     * if and account already exists, add the amount to the existing account
+     * each pubkey has a donator account that is used to track the total amount donated
+     */
+    fn donate(ins: DonateInstruction, accounts: &[AccountInfo], program_id: &Pubkey) {
+        let accounts_iter = &mut accounts.iter();
+
+        let from = next_account_info(accounts_iter).unwrap();
+        let jar = next_account_info(accounts_iter).unwrap();
+        let amount = ins.amount;
+        let jar_bump_seed = ins.jar_bump_seed as u8;
+
+        let result = invoke_signed(
+            &system_instruction::create_account(&from.key, &jar.key, amount, 1_000, &program_id),
+            &[from.clone(), jar.clone()],
+            &[&[b"jar", from.key.as_ref(), &[jar_bump_seed]]],
+        );
+
+        if result.is_ok() {
+            msg!("Donate: {:#?} -> {:#?}", from.key, jar.key);
+        } else {
+            msg!("Donate failed: {:#?} -> {:#?}", from.key, jar.key);
+            msg!("Error: {:#?}", result);
+        }
     }
 }

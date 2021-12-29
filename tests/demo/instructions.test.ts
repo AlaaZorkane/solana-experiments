@@ -47,7 +47,7 @@ describe("demo instructions", async () => {
     }
   }, 100_000);
 
-  it.concurrent("tx with echo instruction", async () => {
+  it.concurrent.skip("tx with echo instruction", async () => {
     const msg = "Hello from Vitest 🚀";
     const echoInstruction = demoBuilder.echo(msg);
 
@@ -62,7 +62,7 @@ describe("demo instructions", async () => {
     console.log("[ECHO] TX:", tx);
   });
 
-  it.concurrent("tx with add instruction", async () => {
+  it.concurrent.skip("tx with add instruction", async () => {
     const addInstruction = demoBuilder.add(13, 37);
 
     const transaction = new Transaction();
@@ -77,7 +77,7 @@ describe("demo instructions", async () => {
     console.log("[ADD] TX:", tx);
   });
 
-  it.concurrent("tx with transfer instruction", async () => {
+  it.concurrent.skip("tx with transfer instruction", async () => {
     const to = new Keypair();
     giveback.push(to);
 
@@ -99,7 +99,19 @@ describe("demo instructions", async () => {
     console.log("[TRANSFER] TX:", tx);
   });
 
-  it.todo("tx with donate instruction");
+  it.concurrent("tx with donate instruction", async () => {
+    const donateInstruction = await demoBuilder.donate(LAMPORTS_PER_SOL / 2);
+
+    const transaction = new Transaction();
+
+    transaction.add(donateInstruction);
+
+    const tx = await sendAndConfirmTransaction(connection, transaction, [
+      wallet,
+    ]);
+
+    expect(tx).toBeDefined();
+  });
 
   // Give back all lamports to the system
   afterAll(async () => {

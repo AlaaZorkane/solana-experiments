@@ -24,4 +24,5 @@ message TransferInstruction {
 
 message DonateInstruction {
   uint64 amount = 1;
+  uint64 jar_bump_seed = 2;
 }

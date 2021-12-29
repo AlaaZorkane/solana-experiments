@@ -105,12 +105,18 @@ export class DemoInstructionBuilder {
     });
   }
 
-  donate(amount: number): TransactionInstruction {
+  async donate(amount: number): Promise<TransactionInstruction> {
+    const [jarPDA, jarBumpSeed] = await PublicKey.findProgramAddress(
+      [Buffer.from("jar"), this.wallet.publicKey.toBuffer()],
+      this.programId
+    );
+
     const donateInstructionData = DemoInstructionData.encode({
       kind: {
         $case: "donate",
         donate: {
           amount,
+          jarBumpSeed,
         },
       },
     }).finish();
@@ -119,6 +125,11 @@ export class DemoInstructionBuilder {
       {
         pubkey: this.wallet.publicKey,
         isSigner: true,
+        isWritable: true,
+      },
+      {
+        pubkey: jarPDA,
+        isSigner: false,
         isWritable: true,
       },
       {
