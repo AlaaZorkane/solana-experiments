@@ -6,6 +6,6 @@
     "build": "cargo build-bpf",
     "deploy": "solana program deploy ../../target/deploy/demo.so",
     "logs": "solana logs $(cat program_id.md)",
-    "proto": "pb-rs instructions.proto -d src"
+    "proto": "pb-rs instructions.proto state.proto -d src --dont_use_cow"
   }
 }
