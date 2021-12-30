@@ -111,6 +111,8 @@ describe("demo instructions", async () => {
     ]);
 
     expect(tx).toBeDefined();
+
+    console.log("[DONATE] TX:", tx);
   });
 
   // Give back all lamports to the system

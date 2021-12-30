@@ -9,17 +9,16 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 
 
-use std::borrow::Cow;
 use quick_protobuf::{MessageRead, MessageWrite, BytesReader, Writer, WriterBackend, Result};
 use quick_protobuf::sizeofs::*;
 use super::*;
 
 #[derive(Debug, Default, PartialEq, Clone)]
-pub struct DemoInstructionData<'a> {
-    pub kind: mod_DemoInstructionData::OneOfkind<'a>,
+pub struct DemoInstructionData {
+    pub kind: mod_DemoInstructionData::OneOfkind,
 }
 
-impl<'a> MessageRead<'a> for DemoInstructionData<'a> {
+impl<'a> MessageRead<'a> for DemoInstructionData {
     fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
         let mut msg = Self::default();
         while !r.is_eof() {
@@ -36,7 +35,7 @@ impl<'a> MessageRead<'a> for DemoInstructionData<'a> {
     }
 }
 
-impl<'a> MessageWrite for DemoInstructionData<'a> {
+impl MessageWrite for DemoInstructionData {
     fn get_size(&self) -> usize {
         0
         + match self.kind {
@@ -62,15 +61,15 @@ pub mod mod_DemoInstructionData {
 use super::*;
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum OneOfkind<'a> {
-    echo(EchoInstruction<'a>),
+pub enum OneOfkind {
+    echo(EchoInstruction),
     add(AddInstruction),
     transfer(TransferInstruction),
     donate(DonateInstruction),
     None,
 }
 
-impl<'a> Default for OneOfkind<'a> {
+impl Default for OneOfkind {
     fn default() -> Self {
         OneOfkind::None
     }
@@ -79,16 +78,16 @@ impl<'a> Default for OneOfkind<'a> {
 }
 
 #[derive(Debug, Default, PartialEq, Clone)]
-pub struct EchoInstruction<'a> {
-    pub str_pb: Cow<'a, str>,
+pub struct EchoInstruction {
+    pub str_pb: String,
 }
 
-impl<'a> MessageRead<'a> for EchoInstruction<'a> {
+impl<'a> MessageRead<'a> for EchoInstruction {
     fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
         let mut msg = Self::default();
         while !r.is_eof() {
             match r.next_tag(bytes) {
-                Ok(10) => msg.str_pb = r.read_string(bytes).map(Cow::Borrowed)?,
+                Ok(10) => msg.str_pb = r.read_string(bytes)?.to_owned(),
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -97,14 +96,14 @@ impl<'a> MessageRead<'a> for EchoInstruction<'a> {
     }
 }
 
-impl<'a> MessageWrite for EchoInstruction<'a> {
+impl MessageWrite for EchoInstruction {
     fn get_size(&self) -> usize {
         0
-        + if self.str_pb == "" { 0 } else { 1 + sizeof_len((&self.str_pb).len()) }
+        + if self.str_pb == String::default() { 0 } else { 1 + sizeof_len((&self.str_pb).len()) }
     }
 
     fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.str_pb != "" { w.write_with_tag(10, |w| w.write_string(&**&self.str_pb))?; }
+        if self.str_pb != String::default() { w.write_with_tag(10, |w| w.write_string(&**&self.str_pb))?; }
         Ok(())
     }
 }

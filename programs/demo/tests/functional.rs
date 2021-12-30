@@ -2,10 +2,13 @@
 
 use std::borrow::Cow;
 
-use demo::instructions::*;
 use demo::*;
-use quick_protobuf::{BytesReader, MessageRead, Writer};
-use solana_program::instruction::{AccountMeta, Instruction};
+use demo::{instructions::*, state::JarAccountState};
+use quick_protobuf::{BytesReader, MessageRead, MessageWrite, Writer};
+use solana_program::{
+    instruction::{AccountMeta, Instruction},
+    pubkey::Pubkey,
+};
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, signer::Signer, transaction::Transaction};
 
@@ -79,3 +82,38 @@ async fn test_demo() {
 //         .write_message(&message)
 //         .expect("Cannot write message!");
 // }
+
+#[tokio::test]
+async fn test_serialization() {
+    let state = JarAccountState {
+        authority: "yo!".to_string(),
+        donation_amount: 42,
+        last_donation_time: 1337,
+    };
+
+    let mut data = Vec::new();
+    let mut writer = Writer::new(&mut data);
+    writer.write_message(&state).expect("Cannot write message!");
+
+    let len = state.get_size();
+    let mut serialized_data = vec![0u8; len + 1];
+    let mut serialized_data_2 = vec![0u8; len];
+
+    quick_protobuf::serialize_into_slice(&state, &mut serialized_data).unwrap();
+    quick_protobuf::serialize_into_slice_without_len(&state, &mut serialized_data_2).unwrap();
+
+    let state_1 =
+        quick_protobuf::deserialize_from_slice_without_len::<JarAccountState>(&serialized_data_2)
+            .unwrap();
+
+    println!("yo!");
+}
+
+#[tokio::test]
+async fn test_random() {
+    let pubkey = Pubkey::new_unique();
+
+    let str = pubkey.to_string();
+
+    println!("pubkey: {}", str);
+}

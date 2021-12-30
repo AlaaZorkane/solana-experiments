@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+message JarAccountState {
+  // Pubkey of the account. base58 encoded.
+  string authority = 1;
+
+  // How many times the owner donated.
+  uint64 donation_amount = 2;
+
+  // last time the owner donated. (unix timestamp)
+  int64 last_donation_time = 3;
+}
