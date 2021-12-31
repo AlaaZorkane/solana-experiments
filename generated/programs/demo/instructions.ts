@@ -30,7 +30,9 @@ export interface DonateInstruction {
   jarBumpSeed: number;
 }
 
-const baseDemoInstructionData: object = {};
+function createBaseDemoInstructionData(): DemoInstructionData {
+  return { kind: undefined };
+}
 
 export const DemoInstructionData = {
   encode(
@@ -67,7 +69,7 @@ export const DemoInstructionData = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DemoInstructionData {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseDemoInstructionData } as DemoInstructionData;
+    const message = createBaseDemoInstructionData();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -104,7 +106,7 @@ export const DemoInstructionData = {
   },
 
   fromJSON(object: any): DemoInstructionData {
-    const message = { ...baseDemoInstructionData } as DemoInstructionData;
+    const message = createBaseDemoInstructionData();
     if (object.echo !== undefined && object.echo !== null) {
       message.kind = {
         $case: "echo",
@@ -153,7 +155,7 @@ export const DemoInstructionData = {
   fromPartial<I extends Exact<DeepPartial<DemoInstructionData>, I>>(
     object: I
   ): DemoInstructionData {
-    const message = { ...baseDemoInstructionData } as DemoInstructionData;
+    const message = createBaseDemoInstructionData();
     if (
       object.kind?.$case === "echo" &&
       object.kind?.echo !== undefined &&
@@ -198,7 +200,9 @@ export const DemoInstructionData = {
   },
 };
 
-const baseEchoInstruction: object = { str: "" };
+function createBaseEchoInstruction(): EchoInstruction {
+  return { str: "" };
+}
 
 export const EchoInstruction = {
   encode(
@@ -214,7 +218,7 @@ export const EchoInstruction = {
   decode(input: _m0.Reader | Uint8Array, length?: number): EchoInstruction {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseEchoInstruction } as EchoInstruction;
+    const message = createBaseEchoInstruction();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -230,7 +234,7 @@ export const EchoInstruction = {
   },
 
   fromJSON(object: any): EchoInstruction {
-    const message = { ...baseEchoInstruction } as EchoInstruction;
+    const message = createBaseEchoInstruction();
     message.str =
       object.str !== undefined && object.str !== null ? String(object.str) : "";
     return message;
@@ -245,13 +249,15 @@ export const EchoInstruction = {
   fromPartial<I extends Exact<DeepPartial<EchoInstruction>, I>>(
     object: I
   ): EchoInstruction {
-    const message = { ...baseEchoInstruction } as EchoInstruction;
+    const message = createBaseEchoInstruction();
     message.str = object.str ?? "";
     return message;
   },
 };
 
-const baseAddInstruction: object = { a: 0, b: 0 };
+function createBaseAddInstruction(): AddInstruction {
+  return { a: 0, b: 0 };
+}
 
 export const AddInstruction = {
   encode(
@@ -270,7 +276,7 @@ export const AddInstruction = {
   decode(input: _m0.Reader | Uint8Array, length?: number): AddInstruction {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseAddInstruction } as AddInstruction;
+    const message = createBaseAddInstruction();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -289,7 +295,7 @@ export const AddInstruction = {
   },
 
   fromJSON(object: any): AddInstruction {
-    const message = { ...baseAddInstruction } as AddInstruction;
+    const message = createBaseAddInstruction();
     message.a =
       object.a !== undefined && object.a !== null ? Number(object.a) : 0;
     message.b =
@@ -307,14 +313,16 @@ export const AddInstruction = {
   fromPartial<I extends Exact<DeepPartial<AddInstruction>, I>>(
     object: I
   ): AddInstruction {
-    const message = { ...baseAddInstruction } as AddInstruction;
+    const message = createBaseAddInstruction();
     message.a = object.a ?? 0;
     message.b = object.b ?? 0;
     return message;
   },
 };
 
-const baseTransferInstruction: object = { amount: 0 };
+function createBaseTransferInstruction(): TransferInstruction {
+  return { amount: 0 };
+}
 
 export const TransferInstruction = {
   encode(
@@ -330,7 +338,7 @@ export const TransferInstruction = {
   decode(input: _m0.Reader | Uint8Array, length?: number): TransferInstruction {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseTransferInstruction } as TransferInstruction;
+    const message = createBaseTransferInstruction();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -346,7 +354,7 @@ export const TransferInstruction = {
   },
 
   fromJSON(object: any): TransferInstruction {
-    const message = { ...baseTransferInstruction } as TransferInstruction;
+    const message = createBaseTransferInstruction();
     message.amount =
       object.amount !== undefined && object.amount !== null
         ? Number(object.amount)
@@ -363,13 +371,15 @@ export const TransferInstruction = {
   fromPartial<I extends Exact<DeepPartial<TransferInstruction>, I>>(
     object: I
   ): TransferInstruction {
-    const message = { ...baseTransferInstruction } as TransferInstruction;
+    const message = createBaseTransferInstruction();
     message.amount = object.amount ?? 0;
     return message;
   },
 };
 
-const baseDonateInstruction: object = { amount: 0, jarBumpSeed: 0 };
+function createBaseDonateInstruction(): DonateInstruction {
+  return { amount: 0, jarBumpSeed: 0 };
+}
 
 export const DonateInstruction = {
   encode(
@@ -388,7 +398,7 @@ export const DonateInstruction = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DonateInstruction {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseDonateInstruction } as DonateInstruction;
+    const message = createBaseDonateInstruction();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -407,7 +417,7 @@ export const DonateInstruction = {
   },
 
   fromJSON(object: any): DonateInstruction {
-    const message = { ...baseDonateInstruction } as DonateInstruction;
+    const message = createBaseDonateInstruction();
     message.amount =
       object.amount !== undefined && object.amount !== null
         ? Number(object.amount)
@@ -430,7 +440,7 @@ export const DonateInstruction = {
   fromPartial<I extends Exact<DeepPartial<DonateInstruction>, I>>(
     object: I
   ): DonateInstruction {
-    const message = { ...baseDonateInstruction } as DonateInstruction;
+    const message = createBaseDonateInstruction();
     message.amount = object.amount ?? 0;
     message.jarBumpSeed = object.jarBumpSeed ?? 0;
     return message;

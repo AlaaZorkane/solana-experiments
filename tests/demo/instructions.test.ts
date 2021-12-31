@@ -3,6 +3,7 @@ import {
   Connection,
   Keypair,
   LAMPORTS_PER_SOL,
+  PublicKey,
   sendAndConfirmTransaction,
   SystemProgram,
   Transaction,
@@ -12,6 +13,7 @@ import { AIRDROP_KEY, DEMO_PROGRAM_ID, MAYBE_FEE } from "../utils";
 import { DemoInstructionBuilder } from "../../lib/demo";
 import fs from "fs/promises";
 import _ from "lodash";
+import { JarAccountState } from "../../generated/programs/demo/state";
 
 describe("demo instructions", async () => {
   const connection = new Connection(clusterApiUrl("devnet"));
@@ -100,7 +102,7 @@ describe("demo instructions", async () => {
   });
 
   it.concurrent("tx with donate instruction", async () => {
-    const donateInstruction = await demoBuilder.donate(LAMPORTS_PER_SOL / 2);
+    const donateInstruction = await demoBuilder.donate(LAMPORTS_PER_SOL / 4);
 
     const transaction = new Transaction();
 
@@ -113,6 +115,43 @@ describe("demo instructions", async () => {
     expect(tx).toBeDefined();
 
     console.log("[DONATE] TX:", tx);
+  });
+
+  it("tx with another donation from same owner", async () => {
+    const donateInstruction = await demoBuilder.donate(LAMPORTS_PER_SOL / 4);
+
+    const transaction = new Transaction();
+
+    transaction.add(donateInstruction);
+
+    const tx = await sendAndConfirmTransaction(connection, transaction, [
+      wallet,
+    ]);
+
+    expect(tx).toBeDefined();
+
+    console.log("[DONATE] TX:", tx);
+  });
+
+  it("has correct data for jar account", async () => {
+    const [jarPDA] = await PublicKey.findProgramAddress(
+      [Buffer.from("jar"), wallet.publicKey.toBuffer()],
+      programId
+    );
+
+    const { data, ...jarAccount } = await connection.getAccountInfo(jarPDA);
+
+    console.log(jarAccount);
+    data.slice();
+    fs.writeFile("./data.json", JSON.stringify(data, null, 2));
+    const decodedData = JarAccountState.decode(data);
+
+    expect(jarAccount.lamports).toBe(LAMPORTS_PER_SOL / 2);
+    expect(jarAccount.owner).toBe(programId);
+    expect(jarAccount.executable).toBe(false);
+    expect(decodedData.authority).toBe(wallet.publicKey.toBase58());
+    expect(decodedData.donationAmount).toBe(2);
+    expect(decodedData.lastDonationTime).toBeGreaterThan(0);
   });
 
   // Give back all lamports to the system

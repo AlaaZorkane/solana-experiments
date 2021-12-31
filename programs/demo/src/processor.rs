@@ -1,17 +1,9 @@
 //! Program instruction processor
 
-use std::borrow::Borrow;
-use std::borrow::Cow;
-
 use quick_protobuf::deserialize_from_slice_without_len;
 use quick_protobuf::serialize_into_slice_without_len;
-use quick_protobuf::BytesReader;
-use quick_protobuf::MessageRead;
-use quick_protobuf::Writer;
 use solana_program::account_info::next_account_info;
 use solana_program::clock::Clock;
-use solana_program::native_token::LAMPORTS_PER_SOL;
-use solana_program::program::invoke;
 use solana_program::program::invoke_signed;
 use solana_program::rent::Rent;
 use solana_program::system_instruction;
@@ -116,8 +108,8 @@ impl Processor {
                 return Err(ProgramError::AccountNotRentExempt);
             }
 
-            let space = 128 + 128; // can be calculated from quickbuf?
-            let result = invoke_signed(
+            let space = 1024; // can be calculated from quickbuf?
+            match invoke_signed(
                 &system_instruction::create_account(
                     &from.key,
                     &jar.key,
@@ -127,24 +119,53 @@ impl Processor {
                 ),
                 &[from.clone(), jar.clone()],
                 &[&[b"jar", from.key.as_ref(), &[jar_bump_seed]]],
-            );
-
-            if result.is_ok() {
-                msg!("New donation jar created: {:#?}", jar.key);
-            } else {
-                return Err(ProgramError::InvalidAccountData);
+            ) {
+                Ok(_) => {
+                    msg!("Created new donation jar for {:#?}", from.key);
+                }
+                Err(e) => {
+                    msg!("Jar creation failed for {:#?}", from.key);
+                    msg!("Error: {:#?}", e);
+                    return Err(e);
+                }
             }
 
             let clock = Clock::get().unwrap();
 
             let state = JarAccountState {
                 authority: from.key.to_string(),
-                donation_amount: amount,
+                donation_amount: 1,
                 last_donation_time: clock.unix_timestamp,
             };
 
-            // let data = *jar.data.borrow();
-            // serialize_into_slice_without_len(&state, data);
+            serialize_into_slice_without_len(&state, *jar.data.borrow_mut()).unwrap();
+        } else {
+            let mut jar_state =
+                deserialize_from_slice_without_len::<JarAccountState>(*jar.data.borrow()).unwrap();
+
+            if from.key.to_string() != jar_state.authority {
+                return Err(ProgramError::IllegalOwner);
+            }
+
+            match invoke_signed(
+                &system_instruction::transfer(&from.key, &jar.key, amount),
+                &[from.clone(), jar.clone()],
+                &[&[b"jar", from.key.as_ref(), &[jar_bump_seed]]],
+            ) {
+                Ok(_) => {
+                    msg!("Donation: {:#?} -> {:#?}", from.key, jar.key);
+                }
+                Err(e) => {
+                    msg!("Donation failed: {:#?} -> {:#?}", from.key, jar.key);
+                    msg!("Error: {:#?}", e);
+                    return Err(e);
+                }
+            };
+
+            jar_state.donation_amount += amount;
+            jar_state.last_donation_time = Clock::get().unwrap().unix_timestamp;
+
+            serialize_into_slice_without_len(&jar_state, *jar.data.borrow_mut()).unwrap();
         }
 
         Ok(())

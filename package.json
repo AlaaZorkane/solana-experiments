@@ -12,7 +12,7 @@
     "demo:test": "yarn ts-node ./tests/demo.ts",
     "demo:proto": "yarn workspace demo proto",
     "= GLOBAL =================================": "",
-    "generate": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./generated --ts_proto_opt=esModuleInterop=true,useOptionals=messages,oneof=unions $(find programs -iname \"*.proto\")",
+    "generate": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./generated --ts_proto_opt=esModuleInterop=true,useOptionals=messages,oneof=unions,delimitedMethods=true $(find programs -iname \"*.proto\")",
     "generate:all": "yarn concurrently \"yarn generate\" \"yarn workspaces run proto\"",
     "test": "yarn vitest"
   },
@@ -28,6 +28,7 @@
     "@solana/web3.js": "^1.31.0",
     "@solvei/borsh": "^0.0.20",
     "lodash-es": "^4.17.21",
+    "protobufjs": "^6.11.2",
     "reflect-metadata": "^0.1.13",
     "vite": "^2.7.7"
   }

@@ -13,11 +13,9 @@ export interface JarAccountState {
   lastDonationTime: number;
 }
 
-const baseJarAccountState: object = {
-  authority: "",
-  donationAmount: 0,
-  lastDonationTime: 0,
-};
+function createBaseJarAccountState(): JarAccountState {
+  return { authority: "", donationAmount: 0, lastDonationTime: 0 };
+}
 
 export const JarAccountState = {
   encode(
@@ -39,7 +37,7 @@ export const JarAccountState = {
   decode(input: _m0.Reader | Uint8Array, length?: number): JarAccountState {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseJarAccountState } as JarAccountState;
+    const message = createBaseJarAccountState();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -61,7 +59,7 @@ export const JarAccountState = {
   },
 
   fromJSON(object: any): JarAccountState {
-    const message = { ...baseJarAccountState } as JarAccountState;
+    const message = createBaseJarAccountState();
     message.authority =
       object.authority !== undefined && object.authority !== null
         ? String(object.authority)
@@ -90,7 +88,7 @@ export const JarAccountState = {
   fromPartial<I extends Exact<DeepPartial<JarAccountState>, I>>(
     object: I
   ): JarAccountState {
-    const message = { ...baseJarAccountState } as JarAccountState;
+    const message = createBaseJarAccountState();
     message.authority = object.authority ?? "";
     message.donationAmount = object.donationAmount ?? 0;
     message.lastDonationTime = object.lastDonationTime ?? 0;

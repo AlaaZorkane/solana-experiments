@@ -97,7 +97,7 @@ async fn test_serialization() {
 
     let len = state.get_size();
     let mut serialized_data = vec![0u8; len + 1];
-    let mut serialized_data_2 = vec![0u8; len];
+    let mut serialized_data_2 = vec![0u8; 1024];
 
     quick_protobuf::serialize_into_slice(&state, &mut serialized_data).unwrap();
     quick_protobuf::serialize_into_slice_without_len(&state, &mut serialized_data_2).unwrap();
